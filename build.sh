@@ -28,6 +28,14 @@ mount -t proc proc /proc
 mount -t sysfs sys /sys
 mount -t devtmpfs dev /dev
 
+mkdir -p /data /home
+mount -t ext4 /dev/vda /data
+
+for d in etc home root; do
+  mkdir -p /$d /data/upper/$d /data/work/$d
+  mount -t overlay overlay -o lowerdir=/$d,upperdir=/data/upper/$d,workdir=/data/work/$d /$d
+done
+
 hostname foo
 
 echo "Hello from my tiny Linux"
@@ -36,9 +44,6 @@ ip link set lo up
 ip link set eth0 up
 udhcpc -i eth0 -q
 
-# we will not run the shell with PID1 as init, redirect init to busybox instead 
-# (e.g. to get controlling terminal and job control in the shell) 
-# exec /bin/sh
 EOF
 
 chmod +x rootfs/etc/init.d/rcS
